@@ -16,8 +16,6 @@ mycol = mydb['collection']
 
 result = mycol.find_one()
 
-companies = [{'id': 1, 'name': 'Company One'}, {'id': 2, 'name': 'Company Two'}]
-
 api = Flask(__name__)
 
 def kill(id):
