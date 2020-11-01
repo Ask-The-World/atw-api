@@ -79,4 +79,4 @@ def Api():
         return jsonify('405')
 
 if __name__ == '__main__':
-    api.run()
+    api.run(host="192.168.178.66", port=80)
