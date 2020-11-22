@@ -10,6 +10,10 @@ This tool is related to the movie "Unknown User: Dark Web", where a command tool
 
 The server does not store any private information from users like their IPs so the surveys will be fully anonymous. Because of this AskTheWorld is not responsible for any contents of the questions nor the answers.
 
+## Method
+
+This api needs to be able to serve many users at the same time although running on a slow system (Raspberry Pi 4). For this reason the API will be written in Rust and utilizes the Actix web server, which currently is the fastest in the world.
+
 ## Use
 
 ### Question Mode
@@ -22,4 +26,4 @@ When the user enters answer mode he will be presented a randomly selected questi
 
 ## Future
 
-Right now the main priority is developing the backend server as well as the api. This is probably going to be achieved by using a Python script which is running on a Raspberry Pi 4 server. The stability of this system is not great so the server will probably be changed as soon as there are more users. To further make it possible for the user to use this api, there will also be a command line tool written in Bash which can be used to send POST and GET request to the api. After all of these programs work reliably there also might be a website where all users can use this tool, regardless of their Operating System and command line experience.
+Right now the main priority is developing the backend server as well as the api. This is probably going to be achieved by using Rust script which is running on a Raspberry Pi 4 server. The stability of this system is not great so the server will probably be changed as soon as there are more users. To further make it possible for the user to use this api, there will also be a command line tool written in Bash which can be used to send GET request to the api. After all of these programs work reliably there also might be a website where all users can use this tool, regardless of their Operating System and command line experience.
