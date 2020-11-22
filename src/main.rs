@@ -1,14 +1,20 @@
+// Imports for working with environment variables and .env files
 use dotenv::dotenv;
 use std::env;
 
 fn main() {
+
+    // Importing Environment variables from .env file
     dotenv().ok();
+
+    // Assigning default values to the configuration variables
     let mut min_time: u32 = 30;
     let mut max_time: u32 = 300;
     let mut default_time: u32 = 180;
     let mut max_question_length: u32 = 255;
     let mut default_delete_time: u32 = 300;
 
+    // Assigning the configuration values found in the environment variables
     for (key, value) in env::vars() {
         match &key[..] {
             "MIN_TIME" => {min_time = value.parse().unwrap();}
@@ -19,6 +25,8 @@ fn main() {
             _ => {}
         }
     }
+
+    // Printing all variable for debugging
     println!("Min_Time: {}", min_time);
     println!("Max_Time: {}", max_time);
     println!("Default_Time: {}", default_time);
