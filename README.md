@@ -58,8 +58,6 @@ Right now the main priority is developing the backend server as well as the api.
 
 ## Configuration
 
----
-
 ### min_time
 
 Minimum required duration in seconds to be specified for a question after which no answer can be submitted anymore. If duration is below [min_time](#min_time) the [default_time](#default_time) will be used.
@@ -82,8 +80,6 @@ This is the default time after which all questions will be deleted from the data
 
 ## API Functions
 
----
-
 ### Submit Question - 1
 
 - Args:
@@ -93,12 +89,12 @@ This is the default time after which all questions will be deleted from the data
 - Output:
     - ObjectId of question in database
     - String: status
-        - 200 - everything worked fine
-        - 201 - question was longer than [max_question_length](#max_question_lenght)
-        - 202 - no question submitted
-        - 203 - no time submitted, used [default_time](#default_time) instead
-        - 204 - submitted time was outside of possible range specified by [min_time](#min_time) and [max_time](#max_time) so [default_time](#default_time) was used
-        - 205 - could not find the question in the database, it might have already been deleted or the ObjectId has been wrong
+        - **200** - everything worked fine
+        - **201** - question was longer than [max_question_length](#max_question_lenght)
+        - **202** - no question submitted
+        - **203** - no time submitted, used [default_time](#default_time) instead
+        - **204** - submitted time was outside of possible range specified by [min_time](#min_time) and [max_time](#max_time) so [default_time](#default_time) was used
+        - **205** - could not find the question in the database, it might have already been deleted or the ObjectId has been wrong
 
 ### Get Question - 2
 
@@ -106,7 +102,7 @@ This is the default time after which all questions will be deleted from the data
     - int: 2 for getting question mode
 - Output:
     - String: status
-        - 200 - everything worked fine
+        - **200** - everything worked fine
     - ObjectId of question in database so an answer can be submitted
     - String: question
     - int: time left until no answers can be submitted in seconds
@@ -119,9 +115,9 @@ This is the default time after which all questions will be deleted from the data
     - ObjectId of question to match the answer to the question
 - Output:
     - String: status
-        - 200 - everything worked fine
-        - 205 - could not find the question in the database, it might have already been deleted or the ObjectId has been wrong
-        - 206 - time of question ran out before answer has been submitted
+        - **200** - everything worked fine
+        - **205** - could not find the question in the database, it might have already been deleted or the ObjectId has been wrong
+        - **206** - time of question ran out before answer has been submitted
   
 ### Get Answer - 4
 
@@ -130,8 +126,8 @@ This is the default time after which all questions will be deleted from the data
     - ObjectId of the question
 - Output:
     - String: status
-        - 200 - everything worked fine
-        - 205 - could not find the question in the database, it might have already been deleted or the ObjectId has been wrong
+        - **200** - everything worked fine
+        - **205** - could not find the question in the database, it might have already been deleted or the ObjectId has been wrong
     - String: question
     - int: time left until submitting is no longer possible in seconds
     - Bool: answer for the question
