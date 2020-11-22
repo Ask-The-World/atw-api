@@ -113,7 +113,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+#.env
 .venv
 env/
 venv/
@@ -245,3 +245,7 @@ Temporary Items
 *.code-workspace
 
 # End of https://www.toptal.com/developers/gitignore/api/python,macos,vscode,flask
+
+# Added by cargo
+
+/target
