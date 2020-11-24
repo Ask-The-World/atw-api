@@ -1,27 +1,33 @@
-use dotenv::dotenv;
-use std::env;
+mod conf_vars;
+use mongodb::{Client};
+use actix_web::{get, web, App, HttpServer, Responder};
+mod db;
 
-fn main() {
-    dotenv().ok();
-    let mut min_time: u32 = 30;
-    let mut max_time: u32 = 300;
-    let mut default_time: u32 = 180;
-    let mut max_question_length: u32 = 255;
-    let mut default_delete_time: u32 = 300;
+#[actix_web::main]
+pub async fn main() -> mongodb::error::Result<()>{
 
-    for (key, value) in env::vars() {
-        match &key[..] {
-            "MIN_TIME" => {min_time = value.parse().unwrap();}
-            "MAX_TIME" => {max_time = value.parse().unwrap();}
-            "DEFAULT_TIME" => {default_time = value.parse().unwrap();}
-            "MAX_QUESTION_LENGTH" => {max_question_length = value.parse().unwrap();}
-            "DEFAULT_DELETE_TIME" => {default_delete_time = value.parse().unwrap();}
-            _ => {}
-        }
+    // Get configuration
+    let config: conf_vars::ConfVars = conf_vars::get_conf_vars();
+    println!("{}, {}, {}, {}, {},", config.min_time, config.max_time, config.default_time, config.max_question_length, config.default_delete_time);
+
+    let client: Client = db::get_client().await?;
+
+    db::ping_server(&client).await?;
+    
+
+    // List the names of the databases in that deployment.
+    for db_name in client.list_database_names(None, None).await? {
+        println!("{}", db_name);
     }
-    println!("Min_Time: {}", min_time);
-    println!("Max_Time: {}", max_time);
-    println!("Default_Time: {}", default_time);
-    println!("Max_Question_Length: {}", max_question_length);
-    println!("Default_Delete_Time: {}", default_delete_time);
+
+    #[get("/{id}")]
+    pub async fn index(web::Path(id): web::Path<u32>)-> impl Responder{
+        format!("Hello {}!, How are you?", id)
+    }
+    HttpServer::new(|| App::new().service(index))
+    .bind("127.0.0.1:8080")?
+    .run()
+    .await?;
+
+    return Ok(());
 }
