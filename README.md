@@ -11,11 +11,15 @@
   - [Future](#future)
 - [AskTheWorld - Docs](#asktheworld---docs)
   - [Configuration](#configuration)
-    - [min_time](#min_time)
-    - [max_time](#max_time)
-    - [default_time](#default_time)
-    - [max_question_lenght](#max_question_lenght)
-    - [default_delete_time](#default_delete_time)
+    - [MIN_TIME](#min_time)
+    - [MAX_TIME](#max_time)
+    - [DEFAULT_TIME](#default_time)
+    - [MAX_QUESTION_LENGTH](#max_question_length)
+    - [DEFAULT_DELETE_TIME](#default_delete_time)
+    - [DB_USER](#db_user)
+    - [DB_PASSWORD](#db_password)
+    - [DB_SERVER](#db_server)
+    - [DB_PORT](#db_port)
   - [API Functions](#api-functions)
     - [Submit Question - 1](#submit-question---1)
     - [Get Question - 2](#get-question---2)
@@ -58,25 +62,41 @@ Right now the main priority is developing the backend server as well as the api.
 
 ## Configuration
 
-### min_time
+### MIN_TIME
 
-Minimum required duration in seconds to be specified for a question after which no answer can be submitted anymore. If duration is below [min_time](#min_time) the [default_time](#default_time) will be used.
+Minimum required duration in seconds to be specified for a question after which no answer can be submitted anymore. If duration is below [MIN_TIME](#MIN_TIME) the [DEFAULT_TIME](#DEFAULT_TIME) will be used.
 
-### max_time
+### MAX_TIME
 
-Maximum required duration in seconds to be specified for a question after which no answer can be submitted anymore. If duration is above [max_time](#max_time) the [default_time](#default_time) will be used.
+Maximum required duration in seconds to be specified for a question after which no answer can be submitted anymore. If duration is above [MAX_TIME](#MAX_TIME) the [DEFAULT_TIME](#DEFAULT_TIME) will be used.
 
-### default_time
+### DEFAULT_TIME
 
 This is the default duration in seconds while which answers may be submitted for a question. If no duration is specified when the question is being submitted this time will be used.
 
-### max_question_lenght
+### MAX_QUESTION_LENGTH
 
 This is the maximum lenght the question may have specified as the number of maximum characters. If the question is longer than this it will throw the 201 error.
 
-### default_delete_time
+### DEFAULT_DELETE_TIME
 
 This is the default time after which all questions will be deleted from the database. Please note, that it will be added to the time left to submit questions.
+
+### DB_USER
+
+This is the user for the MongoDb, if none is specified, the user will stay empty and throw an error.
+
+### DB_PASSWORD
+
+This is the clear text password to the corresponding MongoDb user. If none is specified an empty password will be used. Please note that unsecure MongoDb without users are not currently being supported by ATW.
+
+### DB_SERVER
+
+This is the IP which leads to the MongoDb server. It can be a local or a public IP, depending on where the server is. If none is specified the default value is `localhost`.
+
+### DB_PORT
+
+This is the port for the MongoDB server. In most cases you do not have to specify it because the default value `27017` is the default port of a MongoDb server. But if your server utilizes another port you can customize it through this environment variable.
 
 ## API Functions
 
@@ -90,10 +110,10 @@ This is the default time after which all questions will be deleted from the data
     - ObjectId of question in database
     - String: status
         - **200** - everything worked fine
-        - **201** - question was longer than [max_question_length](#max_question_lenght)
+        - **201** - question was longer than [max_question_length](#MAX_QUESTION_LENGTH)
         - **202** - no question submitted
-        - **203** - no time submitted, used [default_time](#default_time) instead
-        - **204** - submitted time was outside of possible range specified by [min_time](#min_time) and [max_time](#max_time) so [default_time](#default_time) was used
+        - **203** - no time submitted, used [DEFAULT_TIME](#DEFAULT_TIME) instead
+        - **204** - submitted time was outside of possible range specified by [MIN_TIME](#MIN_TIME) and [MAX_TIME](#MAX_TIME) so [DEFAULT_TIME](#DEFAULT_TIME) was used
         - **205** - could not find the question in the database, it might have already been deleted or the ObjectId has been wrong
 
 ### Get Question - 2
