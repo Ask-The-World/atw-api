@@ -249,3 +249,5 @@ Temporary Items
 # Added by cargo
 
 /target
+.env
+.env
