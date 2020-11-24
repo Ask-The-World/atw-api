@@ -9,10 +9,7 @@ pub async fn main() -> mongodb::error::Result<()>{
     let config: conf_vars::ConfVars = conf_vars::get_conf_vars();
     println!("{}, {}, {}, {}, {},", config.min_time, config.max_time, config.default_time, config.max_question_length, config.default_delete_time);
 
-    let connection_string: String = format!("mongodb://{}:{}@{}:{}/", config.db_user, config.db_password, config.db_server, config.db_port);
-
-    // Get a handle to the deployment.
-    let client = Client::with_uri_str(&connection_string[..]).await?;
+    let client = Client::with_uri_str(&format!("mongodb://{}:{}@{}:{}/", config.db_user, config.db_password, config.db_server, config.db_port)[..]).await?;
 
     // Ping the server to see if you can connect to the cluster
     client

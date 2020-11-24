@@ -19,7 +19,7 @@ pub fn get_conf_vars() -> ConfVars {
 
     // Importing Environment variables from .env file
     dotenv().ok();
-
+    
     // Assigning default values to the configuration variables
     let mut conf_vars: ConfVars = ConfVars{
         min_time: 30,
