@@ -14,16 +14,13 @@ pub async fn main() -> mongodb::error::Result<()>{
 
     db::ping_server(&client).await?;
     
-
-    // List the names of the databases in that deployment.
-    for db_name in client.list_database_names(None, None).await? {
-        println!("{}", db_name);
-    }
-
     #[get("/{id}")]
-    pub async fn index(web::Path(id): web::Path<u32>)-> impl Responder{
-        format!("Hello {}!, How are you?", id)
+    async fn index(web::Path(id): web::Path<u32>)-> impl Responder{
+        db::list_databases_slow().await.unwrap();
+        let x = db::ping_server_slow().await.unwrap();
+        format!("Hello {}!, How are you? - {}", id, x)
     }
+
     HttpServer::new(|| App::new().service(index))
     .bind("127.0.0.1:8080")?
     .run()
