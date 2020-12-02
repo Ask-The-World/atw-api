@@ -8,7 +8,6 @@ mod db;
 pub async fn main() -> mongodb::error::Result<()>{
 
     struct AppState {
-        // config: conf_vars::ConfVars, // currently not being used, maybe usefull for later
         client: Client
     }
     // Get configuration
@@ -27,7 +26,7 @@ pub async fn main() -> mongodb::error::Result<()>{
         format!("Hello {}!, How are you? - {:#?}", id, x)
     }
 
-    HttpServer::new(move || {App::new().data(AppState{/* config: config.clone(),  */client: client.clone()}).service(index)})
+    HttpServer::new(move || {App::new().data(AppState{client: client.clone()}).service(index)})
     .bind("127.0.0.1:8080")?
     .run()
     .await?;
