@@ -3,6 +3,7 @@ use dotenv::dotenv;
 use std::env;
 
 // Config Structure
+#[derive(Clone)]
 pub struct ConfVars{
     pub min_time: u32,
     pub max_time: u32,
