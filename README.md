@@ -20,6 +20,8 @@
     - [DB_PASSWORD](#db_password)
     - [DB_SERVER](#db_server)
     - [DB_PORT](#db_port)
+    - [DB_DATABASE](#db_database)
+    - [DB_COLLECTION](#db_collection)
   - [API Functions](#api-functions)
     - [Submit Question - 1](#submit-question---1)
     - [Get Question - 2](#get-question---2)
@@ -97,6 +99,14 @@ This is the IP which leads to the MongoDb server. It can be a local or a public 
 ### DB_PORT
 
 This is the port for the MongoDB server. In most cases you do not have to specify it because the default value `27017` is the default port of a MongoDb server. But if your server utilizes another port you can customize it through this environment variable.
+
+### DB_DATABASE
+
+This is the name of the database as a string where the collection containing the questions is on the mongodb server. The default value is `atw`.
+
+### DB_COLLECTION
+
+This is the selected collection for the currently selected database where the documents are being stored. The default value is `questions`.
 
 ## API Functions
 
