@@ -1,6 +1,6 @@
 mod conf_vars;
 use actix_web::{web, App, HttpServer, Responder};
-use mongodb::{Collection, bson::{Document, oid}};
+use mongodb::{Collection, bson,};
 mod db;
 use futures::stream::StreamExt;
 use serde::{Serialize, Deserialize};
@@ -18,10 +18,10 @@ pub async fn main() -> mongodb::error::Result<()> {
         Ok(time) => now = time.as_secs(),
         Err(_) => {}
     }
-    #[derive(Deserialize, Serialize)]
+    #[derive(Deserialize, Serialize, Clone, Debug)]
     struct QuestionEntry {
-        #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-        id: Option<oid::ObjectId>,
+        #[serde(rename = "_id")]
+        id: bson::oid::ObjectId,
         question: String,
         time: u32,
         yes: u32,
@@ -41,12 +41,13 @@ pub async fn main() -> mongodb::error::Result<()> {
         let (question, time) = param;
         let mut cursor = db::find_all(&data.collection.clone()).await.unwrap();
         
-        let mut results: Vec<Document> = [].to_vec();
+        let mut results: Vec<QuestionEntry> = [].to_vec();
         // // Iterate over the results of the cursor.
         while let Some(result) = cursor.next().await {
             match result {
                 Ok(document) => {
-                    results.push(document);
+                    let doc: QuestionEntry = bson::from_bson(bson::Bson::Document(document)).unwrap();
+                    results.push(doc);
                 }
                 Err(e) => println!("{:#?}", e),
             }
