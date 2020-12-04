@@ -13,7 +13,9 @@ pub struct ConfVars{
     pub db_password: String,
     pub db_user: String,
     pub db_port: String,
-    pub db_server: String
+    pub db_server: String,
+    pub db_database: String,
+    pub db_collection: String,
 }
 
 pub fn get_conf_vars() -> ConfVars {
@@ -32,6 +34,8 @@ pub fn get_conf_vars() -> ConfVars {
         db_password: "".to_string(),
         db_port: "27017".to_string(),
         db_server: "localhost".to_string(),
+        db_database: "atw".to_string(),
+        db_collection: "questions".to_string()
     };
 
     // Assigning the configuration values found in the environment variables
@@ -46,6 +50,8 @@ pub fn get_conf_vars() -> ConfVars {
             "DB_PASSWORD" => {conf_vars.db_password = value}
             "DB_PORT" => {conf_vars.db_port = value}
             "DB_SERVER" => {conf_vars.db_server = value}
+            "DB_DATABASE" => {conf_vars.db_database = value}
+            "DB_COLLECTION" => {conf_vars.db_collection = value}
             _ => {}
         }
     }

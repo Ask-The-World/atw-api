@@ -1,6 +1,6 @@
 mod conf_vars;
 use actix_web::{web, App, HttpServer, Responder};
-use mongodb::{Client, Collection, Database, bson::Document};
+use mongodb::{Collection, bson::Document};
 mod db;
 use futures::stream::StreamExt;
 
@@ -10,9 +10,7 @@ pub async fn main() -> mongodb::error::Result<()> {
         collection: Collection,
     }
 
-    let client: Client = db::get_client().await?;
-    let database: Database = client.database("atw");
-    let collection: Collection = database.collection("questions");
+    let collection = db::get_collection().await.unwrap();
 
     println!("Successfully running... \nStop with \"CTRL + C\"...");
 
