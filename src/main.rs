@@ -1,3 +1,4 @@
+// imports
 mod conf_vars;
 use actix_web::{web, App, HttpServer, Responder};
 use mongodb::{Collection, bson,};
@@ -5,6 +6,8 @@ mod db;
 use serde::{Serialize, Deserialize};
 use rand::random;
 
+
+// question Formats
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct QuestionEntry {
     question: String,
@@ -27,6 +30,8 @@ pub struct QuestionResult {
 
 #[actix_web::main]
 pub async fn main() -> mongodb::error::Result<()> {
+
+    // initializing app
     struct AppState {
         collection: Collection,
     }
@@ -35,6 +40,9 @@ pub async fn main() -> mongodb::error::Result<()> {
 
     println!("Successfully running...\nStop with \"CTRL + C\"...");
 
+    // route handlers
+
+    // TODO: add error handling and returning status codes
     async fn submit_question(
         web::Path(param): web::Path<(String, u32)>,
         data: web::Data<AppState>,
@@ -53,11 +61,13 @@ pub async fn main() -> mongodb::error::Result<()> {
         web::Json(result)
     }
 
+    // TODO: add error handling and returning status codes
     async fn list_all(data: web::Data<AppState>) -> impl Responder {
         let results = db::find_all(&data.collection.clone()).await.unwrap();
         web::Json(results)
     }
 
+    // starting the server
     HttpServer::new(move || {
         App::new()
             .data(AppState {

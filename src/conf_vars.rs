@@ -1,8 +1,8 @@
-// Imports for working with environment variables and .env files
+// imports for working with environment variables and .env files
 use dotenv::dotenv;
 use std::env;
 
-// Config Structure
+// config structure
 #[derive(Clone)]
 pub struct ConfVars{
     pub min_time: u32,
@@ -20,10 +20,10 @@ pub struct ConfVars{
 
 pub fn get_conf_vars() -> ConfVars {
 
-    // Importing Environment variables from .env file
+    // importing environment variables from .env file
     dotenv().ok();
     
-    // Assigning default values to the configuration variables
+    // assigning default values to the configuration variables
     let mut conf_vars: ConfVars = ConfVars{
         min_time: 30,
         max_time: 300,
@@ -38,7 +38,7 @@ pub fn get_conf_vars() -> ConfVars {
         db_collection: "questions".to_string()
     };
 
-    // Assigning the configuration values found in the environment variables
+    // assigning the configuration values found in the environment variables
     for (key, value) in env::vars() {
         match &key[..] {
             "MIN_TIME" => {conf_vars.min_time = value.parse().unwrap();}
