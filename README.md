@@ -27,6 +27,14 @@
     - [Get Question](#get-question)
     - [Answer Question](#answer-question)
     - [Get Answer](#get-answer)
+  - [Database Document Structure](#database-document-structure)
+    - [id: Option<bson::oid::ObjectId>](#id-optionbsonoidobjectid)
+    - [question: String](#question-string)
+    - [time: u32](#time-u32)
+    - [yes: u32](#yes-u32)
+    - [no: u32](#no-u32)
+    - [default_answer: bool](#default_answer-bool)
+    - [timestamp: u64](#timestamp-u64)
 
 # AskTheWorld - General Information
 
@@ -161,3 +169,33 @@ This is the selected collection for the currently selected database where the do
     - String: question
     - int: time left until submitting is no longer possible in seconds
     - Bool: answer for the question
+
+## Database Document Structure
+
+### id: Option<bson::oid::ObjectId>
+
+This is the ObjectId for the question in the bson format which has been assigned to a question automatically by mongodb.
+
+### question: String
+
+This is the question which has been submitted.
+
+### time: u32
+
+This is the time the question has left for allowing answers. This will be added to the timestamp.
+
+### yes: u32
+
+This is the amount of yes votes for this question.
+
+### no: u32
+
+This is the amount of no votes for this question.
+
+### default_answer: bool
+
+This is the default answer which is being used when there is an equal amount of votes in favor of and against this question. It will be assigned to the question at the start and is being calculated by a 50/50 probability.
+
+### timestamp: u64
+
+This is the timestamp at which the question has been created. It is being formated like a UNIX timestamp so it counts the seconds since `01/01/1970 00:00:00`.
