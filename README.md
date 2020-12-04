@@ -23,10 +23,10 @@
     - [DB_DATABASE](#db_database)
     - [DB_COLLECTION](#db_collection)
   - [API Functions](#api-functions)
-    - [Submit Question - 1](#submit-question---1)
-    - [Get Question - 2](#get-question---2)
-    - [Answer Question - 3](#answer-question---3)
-    - [Get Answer - 4](#get-answer---4)
+    - [Submit Question](#submit-question)
+    - [Get Question](#get-question)
+    - [Answer Question](#answer-question)
+    - [Get Answer](#get-answer)
 
 # AskTheWorld - General Information
 
@@ -110,7 +110,7 @@ This is the selected collection for the currently selected database where the do
 
 ## API Functions
 
-### Submit Question - 1
+### Submit Question
 
 - Args:
     - path: /api/submit/question/{question}/{time}
@@ -126,7 +126,7 @@ This is the selected collection for the currently selected database where the do
         - **204** - submitted time was outside of possible range specified by [MIN_TIME](#MIN_TIME) and [MAX_TIME](#MAX_TIME) so [DEFAULT_TIME](#DEFAULT_TIME) was used
         - **205** - could not find the question in the database, it might have already been deleted or the ObjectId has been wrong
 
-### Get Question - 2
+### Get Question
 
 - Args: 
     - path: /api/get/question
@@ -137,7 +137,7 @@ This is the selected collection for the currently selected database where the do
     - String: question
     - int: time left until no answers can be submitted in seconds
 
-### Answer Question - 3
+### Answer Question
 
 - Args:
     - path: /api/submit/answer/{answer}/{ObjectId}
@@ -149,7 +149,7 @@ This is the selected collection for the currently selected database where the do
         - **205** - could not find the question in the database, it might have already been deleted or the ObjectId has been wrong
         - **206** - time of question ran out before answer has been submitted
   
-### Get Answer - 4
+### Get Answer
 
 - Args:
     - path: /api/get/answer/{ObjectId}
