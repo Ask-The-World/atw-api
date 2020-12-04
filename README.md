@@ -103,7 +103,7 @@ This is the port for the MongoDB server. In most cases you do not have to specif
 ### Submit Question - 1
 
 - Args:
-    - int: 1 for submitting mode
+    - path: /api/submit/question/{question}/{time}
     - String: question
     - int: time until survey ends
 - Output:
@@ -119,7 +119,7 @@ This is the port for the MongoDB server. In most cases you do not have to specif
 ### Get Question - 2
 
 - Args: 
-    - int: 2 for getting question mode
+    - path: /api/get/question
 - Output:
     - String: status
         - **200** - everything worked fine
@@ -130,7 +130,7 @@ This is the port for the MongoDB server. In most cases you do not have to specif
 ### Answer Question - 3
 
 - Args:
-    - int: 3 for answering mode
+    - path: /api/submit/answer/{answer}/{ObjectId}
     - Bool: submitted answer, True for yes and False for no
     - ObjectId of question to match the answer to the question
 - Output:
@@ -142,7 +142,7 @@ This is the port for the MongoDB server. In most cases you do not have to specif
 ### Get Answer - 4
 
 - Args:
-    - int: 4 for getting answer mode
+    - path: /api/get/answer/{ObjectId}
     - ObjectId of the question
 - Output:
     - String: status
