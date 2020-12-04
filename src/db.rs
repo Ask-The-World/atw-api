@@ -1,4 +1,4 @@
-use mongodb::{Client, bson::doc};
+use mongodb::{Client, bson::doc, Collection, Cursor};
 use crate::conf_vars::{ConfVars, get_conf_vars};
 
 pub async fn get_client() -> mongodb::error::Result<Client> {
@@ -7,12 +7,8 @@ pub async fn get_client() -> mongodb::error::Result<Client> {
     return Ok(client)
 }
 
-pub async fn ping_server(client: &Client) ->  mongodb::error::Result<()> {
+pub async fn find_all(col: &Collection) ->  mongodb::error::Result<Cursor> {
     // Ping the server to see if you can connect to the cluster
-    client
-        .database("admin")
-        .run_command(doc! {"ping": 1}, None)
-        .await?;
-    //println!("Connected successfully.");
-    Ok(())
+    let cursor = col.find(doc! {}, None).await?;
+    Ok(cursor)
 }
