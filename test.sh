@@ -5,6 +5,6 @@
 i="0"
 
 while true; do
-echo $(curl localhost:8080/$i)
+echo $(curl localhost:8080/api/$i)
 i=$[i+1]
 done

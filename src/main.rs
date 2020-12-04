@@ -1,6 +1,6 @@
 mod conf_vars;
 use mongodb::{Client};
-use actix_web::{get, web, App, HttpServer, Responder};
+use actix_web::{web, App, HttpServer, Responder};
 mod db;
 
 
@@ -19,14 +19,17 @@ pub async fn main() -> mongodb::error::Result<()>{
     let client_ref = client.clone();
     db::ping_server(&client_ref).await?;
     
-    #[get("/{id}")]
     async fn index(web::Path(id): web::Path<u32>, data: web::Data<AppState>)-> impl Responder{
         db::list_databases_slow().await.unwrap();
         let x = db::ping_server(&data.client.clone()).await.unwrap();
         format!("Hello {}!, How are you? - {:#?}", id, x)
     }
 
-    HttpServer::new(move || {App::new().data(AppState{client: client.clone()}).service(index)})
+    HttpServer::new(move || 
+        {App::new()
+            .data(AppState{client: client.clone()})
+            .service(web::scope("/api")
+            .route("/{id}", web::get().to(index)))})
     .bind("127.0.0.1:8080")?
     .run()
     .await?;
