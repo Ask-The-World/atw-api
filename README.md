@@ -34,7 +34,6 @@
     - [yes: u32](#yes-u32)
     - [no: u32](#no-u32)
     - [default_answer: bool](#default_answer-bool)
-    - [timestamp: u64](#timestamp-u64)
 
 # AskTheWorld - General Information
 
@@ -195,7 +194,3 @@ This is the amount of no votes for this question.
 ### default_answer: bool
 
 This is the default answer which is being used when there is an equal amount of votes in favor of and against this question. It will be assigned to the question at the start and is being calculated by a 50/50 probability.
-
-### timestamp: u64
-
-This is the timestamp at which the question has been created. It is being formated like a UNIX timestamp so it counts the seconds since `01/01/1970 00:00:00`.

@@ -3,7 +3,6 @@ use actix_web::{web, App, HttpServer, Responder};
 use mongodb::{Collection, bson,};
 mod db;
 use serde::{Serialize, Deserialize};
-use std::time::SystemTime;
 use rand::random;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -13,7 +12,6 @@ pub struct QuestionEntry {
     yes: i32,
     no: i32,
     default_answer: bool,
-    timestamp: i128,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -25,7 +23,6 @@ pub struct QuestionResult {
     yes: u32,
     no: u32,
     default_answer: bool,
-    timestamp: u64,
 }
 
 #[actix_web::main]
@@ -34,16 +31,9 @@ pub async fn main() -> mongodb::error::Result<()> {
         collection: Collection,
     }
 
-    let mut now: u64 = 0;
-
-    match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
-        Ok(time) => now = time.as_secs(),
-        Err(_) => {}
-    }
-
     let collection = db::get_collection().await.unwrap();
 
-    println!("Successfully running... \nStarted at {}...\nStop with \"CTRL + C\"...", now);
+    println!("Successfully running...\nStop with \"CTRL + C\"...");
 
     async fn submit_question(
         web::Path(param): web::Path<(String, u32)>,
@@ -56,9 +46,7 @@ pub async fn main() -> mongodb::error::Result<()> {
             time: i64::from(time),
             yes: 0,
             no: 0,
-            default_answer: random(),
-            timestamp: i128::from(SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs()),
-
+            default_answer: random()
         };
         let result = db::submit_question(&data.collection.clone(), question_entry).await.unwrap();
 
