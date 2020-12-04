@@ -16,16 +16,3 @@ pub async fn ping_server(client: &Client) ->  mongodb::error::Result<()> {
     //println!("Connected successfully.");
     Ok(())
 }
-
-// Only for debugging, does not return anything
-pub async fn list_databases_slow() ->  mongodb::error::Result<()> {
-
-    let client = get_client().await?;
-
-    // List the names of the databases in that deployment.
-    for _db_name in client.list_database_names(None, None).await? {
-        //println!("{}", db_name);
-    }
-
-    Ok(())
-}

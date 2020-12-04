@@ -13,11 +13,10 @@ pub async fn main() -> mongodb::error::Result<()>{
     
     let client: Client = db::get_client().await?;
 
-    println!("Successfully running... \nStop with CTRL + C ...");
+    println!("Successfully running... \nStop with CTRL + C...");
     
     async fn submit_question(web::Path(param): web::Path<(String, u32)>, data: web::Data<AppState>)-> impl Responder{
         let (question, time) = param;
-        db::list_databases_slow().await.unwrap();
         let x = db::ping_server(&data.client.clone()).await.unwrap();
         format!("Hello {:?}!, How are you, {:?}? - {:#?}", time, question, x)
     }
