@@ -1,44 +1,44 @@
-use mongodb::{Client, bson::doc};
-use crate::conf_vars::{ConfVars, get_conf_vars};
+// imports
+use bson::oid::ObjectId;
+use mongodb::{Client, bson::doc, bson, Collection, Database};
+use crate::{QuestionEntry, QuestionResult, conf_vars::{ConfVars, get_conf_vars}};
+use futures::stream::StreamExt;
 
-pub async fn get_client() -> mongodb::error::Result<Client> {
+// initializing connection with database
+pub async fn get_collection() -> mongodb::error::Result<Collection> {
     let config: ConfVars = get_conf_vars();
     let client = Client::with_uri_str(&format!("mongodb://{}:{}@{}:{}/", config.db_user, config.db_password, config.db_server, config.db_port)[..]).await?;
-    return Ok(client)
+    let database: Database = client.database("atw");
+    let collection: Collection = database.collection("questions");
+    return Ok(collection)
 }
 
-pub async fn ping_server(client: &Client) ->  mongodb::error::Result<()> {
+// collecting all questions
+// TODO: add error handling and status codes
+pub async fn find_all(col: &Collection) ->  mongodb::error::Result<Vec<QuestionResult>> {
     // Ping the server to see if you can connect to the cluster
-    client
-        .database("admin")
-        .run_command(doc! {"ping": 1}, None)
-        .await?;
-    //println!("Connected successfully.");
-    Ok(())
-}
+    let mut cursor = col.find(doc! {}, None).await?;
+        
+    let mut results: Vec<QuestionResult> = [].to_vec();
 
-// Slower than normal function because client does not get passed and a new one has to be created
-pub async fn ping_server_slow() ->  mongodb::error::Result<String> {
-
-    let client = get_client().await?;
-    // Ping the server to see if you can connect to the cluster
-    client
-        .database("admin")
-        .run_command(doc! {"ping": 1}, None)
-        .await?;
-    //println!("Connected successfully.");
-    Ok("Connected successfully.".to_string())
-}
-
-// Only for debugging, does not return anything
-pub async fn list_databases_slow() ->  mongodb::error::Result<()> {
-
-    let client = get_client().await?;
-
-    // List the names of the databases in that deployment.
-    for _db_name in client.list_database_names(None, None).await? {
-        //println!("{}", db_name);
+    while let Some(result) = cursor.next().await {
+        match result {
+            Ok(document) => {
+                let doc: QuestionResult= bson::from_bson(bson::Bson::Document(document)).unwrap();
+                results.push(doc);
+            }
+            Err(e) => println!("{:#?}", e),
+        }
     }
+    Ok(results)
+}
 
-    Ok(())
+// submiting a single question and returning ObjectId
+// TODO: add error handling and returning status codes
+pub async fn submit_question(col: &Collection, data: QuestionEntry) -> mongodb::error::Result<ObjectId> {
+    let serialized_data = bson::to_bson(&data)?;
+    let document = serialized_data.as_document().unwrap();
+    let result = col.insert_one(document.to_owned(), None).await?;
+    let id = result.inserted_id.as_object_id().unwrap().to_owned();
+    Ok(id)
 }

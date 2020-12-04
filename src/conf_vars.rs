@@ -1,8 +1,9 @@
-// Imports for working with environment variables and .env files
+// imports for working with environment variables and .env files
 use dotenv::dotenv;
 use std::env;
 
-// Config Structure
+// config structure
+#[derive(Clone)]
 pub struct ConfVars{
     pub min_time: u32,
     pub max_time: u32,
@@ -12,15 +13,17 @@ pub struct ConfVars{
     pub db_password: String,
     pub db_user: String,
     pub db_port: String,
-    pub db_server: String
+    pub db_server: String,
+    pub db_database: String,
+    pub db_collection: String,
 }
 
 pub fn get_conf_vars() -> ConfVars {
 
-    // Importing Environment variables from .env file
+    // importing environment variables from .env file
     dotenv().ok();
     
-    // Assigning default values to the configuration variables
+    // assigning default values to the configuration variables
     let mut conf_vars: ConfVars = ConfVars{
         min_time: 30,
         max_time: 300,
@@ -31,9 +34,11 @@ pub fn get_conf_vars() -> ConfVars {
         db_password: "".to_string(),
         db_port: "27017".to_string(),
         db_server: "localhost".to_string(),
+        db_database: "atw".to_string(),
+        db_collection: "questions".to_string()
     };
 
-    // Assigning the configuration values found in the environment variables
+    // assigning the configuration values found in the environment variables
     for (key, value) in env::vars() {
         match &key[..] {
             "MIN_TIME" => {conf_vars.min_time = value.parse().unwrap();}
@@ -45,6 +50,8 @@ pub fn get_conf_vars() -> ConfVars {
             "DB_PASSWORD" => {conf_vars.db_password = value}
             "DB_PORT" => {conf_vars.db_port = value}
             "DB_SERVER" => {conf_vars.db_server = value}
+            "DB_DATABASE" => {conf_vars.db_database = value}
+            "DB_COLLECTION" => {conf_vars.db_collection = value}
             _ => {}
         }
     }

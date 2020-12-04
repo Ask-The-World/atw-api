@@ -20,11 +20,20 @@
     - [DB_PASSWORD](#db_password)
     - [DB_SERVER](#db_server)
     - [DB_PORT](#db_port)
+    - [DB_DATABASE](#db_database)
+    - [DB_COLLECTION](#db_collection)
   - [API Functions](#api-functions)
-    - [Submit Question - 1](#submit-question---1)
-    - [Get Question - 2](#get-question---2)
-    - [Answer Question - 3](#answer-question---3)
-    - [Get Answer - 4](#get-answer---4)
+    - [Submit Question](#submit-question)
+    - [Get Question](#get-question)
+    - [Answer Question](#answer-question)
+    - [Get Answer](#get-answer)
+  - [Database Document Structure](#database-document-structure)
+    - [id: Option<bson::oid::ObjectId>](#id-optionbsonoidobjectid)
+    - [question: String](#question-string)
+    - [time: u32](#time-u32)
+    - [yes: u32](#yes-u32)
+    - [no: u32](#no-u32)
+    - [default_answer: bool](#default_answer-bool)
 
 # AskTheWorld - General Information
 
@@ -98,12 +107,20 @@ This is the IP which leads to the MongoDb server. It can be a local or a public 
 
 This is the port for the MongoDB server. In most cases you do not have to specify it because the default value `27017` is the default port of a MongoDb server. But if your server utilizes another port you can customize it through this environment variable.
 
+### DB_DATABASE
+
+This is the name of the database as a string where the collection containing the questions is on the mongodb server. The default value is `atw`.
+
+### DB_COLLECTION
+
+This is the selected collection for the currently selected database where the documents are being stored. The default value is `questions`.
+
 ## API Functions
 
-### Submit Question - 1
+### Submit Question
 
 - Args:
-    - int: 1 for submitting mode
+    - path: /api/submit/question/{question}/{time}
     - String: question
     - int: time until survey ends
 - Output:
@@ -116,10 +133,10 @@ This is the port for the MongoDB server. In most cases you do not have to specif
         - **204** - submitted time was outside of possible range specified by [MIN_TIME](#MIN_TIME) and [MAX_TIME](#MAX_TIME) so [DEFAULT_TIME](#DEFAULT_TIME) was used
         - **205** - could not find the question in the database, it might have already been deleted or the ObjectId has been wrong
 
-### Get Question - 2
+### Get Question
 
 - Args: 
-    - int: 2 for getting question mode
+    - path: /api/get/question
 - Output:
     - String: status
         - **200** - everything worked fine
@@ -127,10 +144,10 @@ This is the port for the MongoDB server. In most cases you do not have to specif
     - String: question
     - int: time left until no answers can be submitted in seconds
 
-### Answer Question - 3
+### Answer Question
 
 - Args:
-    - int: 3 for answering mode
+    - path: /api/submit/answer/{answer}/{ObjectId}
     - Bool: submitted answer, True for yes and False for no
     - ObjectId of question to match the answer to the question
 - Output:
@@ -139,10 +156,10 @@ This is the port for the MongoDB server. In most cases you do not have to specif
         - **205** - could not find the question in the database, it might have already been deleted or the ObjectId has been wrong
         - **206** - time of question ran out before answer has been submitted
   
-### Get Answer - 4
+### Get Answer
 
 - Args:
-    - int: 4 for getting answer mode
+    - path: /api/get/answer/{ObjectId}
     - ObjectId of the question
 - Output:
     - String: status
@@ -151,3 +168,29 @@ This is the port for the MongoDB server. In most cases you do not have to specif
     - String: question
     - int: time left until submitting is no longer possible in seconds
     - Bool: answer for the question
+
+## Database Document Structure
+
+### id: Option<bson::oid::ObjectId>
+
+This is the ObjectId for the question in the bson format which has been assigned to a question automatically by mongodb.
+
+### question: String
+
+This is the question which has been submitted.
+
+### time: u32
+
+This is the time the question has left for allowing answers. This will be added to the timestamp.
+
+### yes: u32
+
+This is the amount of yes votes for this question.
+
+### no: u32
+
+This is the amount of no votes for this question.
+
+### default_answer: bool
+
+This is the default answer which is being used when there is an equal amount of votes in favor of and against this question. It will be assigned to the question at the start and is being calculated by a 50/50 probability.
