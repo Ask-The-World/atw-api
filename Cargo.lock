@@ -304,6 +304,7 @@ dependencies = [
  "dotenv",
  "futures",
  "mongodb",
+ "rand",
  "serde",
  "tokio",
 ]

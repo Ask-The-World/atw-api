@@ -1,5 +1,7 @@
-use mongodb::{Client, bson::doc, Collection, Cursor, Database};
-use crate::conf_vars::{ConfVars, get_conf_vars};
+use bson::oid::ObjectId;
+use mongodb::{Client, bson::doc, bson, Collection, Database};
+use crate::{QuestionEntry, QuestionResult, conf_vars::{ConfVars, get_conf_vars}};
+use futures::stream::StreamExt;
 
 pub async fn get_collection() -> mongodb::error::Result<Collection> {
     let config: ConfVars = get_conf_vars();
@@ -9,8 +11,28 @@ pub async fn get_collection() -> mongodb::error::Result<Collection> {
     return Ok(collection)
 }
 
-pub async fn find_all(col: &Collection) ->  mongodb::error::Result<Cursor> {
+pub async fn find_all(col: &Collection) ->  mongodb::error::Result<Vec<QuestionResult>> {
     // Ping the server to see if you can connect to the cluster
-    let cursor = col.find(doc! {}, None).await?;
-    Ok(cursor)
+    let mut cursor = col.find(doc! {}, None).await?;
+        
+    let mut results: Vec<QuestionResult> = [].to_vec();
+
+    while let Some(result) = cursor.next().await {
+        match result {
+            Ok(document) => {
+                let doc: QuestionResult= bson::from_bson(bson::Bson::Document(document)).unwrap();
+                results.push(doc);
+            }
+            Err(e) => println!("{:#?}", e),
+        }
+    }
+    Ok(results)
+}
+
+pub async fn submit_question(col: &Collection, data: QuestionEntry) -> mongodb::error::Result<ObjectId> {
+    let serialized_data = bson::to_bson(&data)?;
+    let document = serialized_data.as_document().unwrap();
+    let result = col.insert_one(document.to_owned(), None).await?;
+    let id = result.inserted_id.as_object_id().unwrap().to_owned();
+    Ok(id)
 }

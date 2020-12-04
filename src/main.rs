@@ -2,9 +2,31 @@ mod conf_vars;
 use actix_web::{web, App, HttpServer, Responder};
 use mongodb::{Collection, bson,};
 mod db;
-use futures::stream::StreamExt;
 use serde::{Serialize, Deserialize};
 use std::time::SystemTime;
+use rand::random;
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct QuestionEntry {
+    question: String,
+    time: i64,
+    yes: i32,
+    no: i32,
+    default_answer: bool,
+    timestamp: i128,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct QuestionResult {
+    #[serde(rename = "_id")]
+    id: bson::oid::ObjectId,
+    question: String,
+    time: u32,
+    yes: u32,
+    no: u32,
+    default_answer: bool,
+    timestamp: u64,
+}
 
 #[actix_web::main]
 pub async fn main() -> mongodb::error::Result<()> {
@@ -18,17 +40,6 @@ pub async fn main() -> mongodb::error::Result<()> {
         Ok(time) => now = time.as_secs(),
         Err(_) => {}
     }
-    #[derive(Deserialize, Serialize, Clone, Debug)]
-    struct QuestionEntry {
-        #[serde(rename = "_id")]
-        id: bson::oid::ObjectId,
-        question: String,
-        time: u32,
-        yes: u32,
-        no: u32,
-        default_answer: bool,
-        timestamp: u64,
-    }
 
     let collection = db::get_collection().await.unwrap();
 
@@ -39,22 +50,24 @@ pub async fn main() -> mongodb::error::Result<()> {
         data: web::Data<AppState>,
     ) -> impl Responder {
         let (question, time) = param;
-        let mut cursor = db::find_all(&data.collection.clone()).await.unwrap();
-        
-        let mut results: Vec<QuestionEntry> = [].to_vec();
-        // // Iterate over the results of the cursor.
-        while let Some(result) = cursor.next().await {
-            match result {
-                Ok(document) => {
-                    let doc: QuestionEntry = bson::from_bson(bson::Bson::Document(document)).unwrap();
-                    results.push(doc);
-                }
-                Err(e) => println!("{:#?}", e),
-            }
-        }
-        println!("{:?}", results.len());
 
-        format!("Hello {:?}!, How are you, {:?}? - {:#?}", time, question, results)
+        let question_entry = QuestionEntry {
+            question: question,
+            time: i64::from(time),
+            yes: 0,
+            no: 0,
+            default_answer: random(),
+            timestamp: i128::from(SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs()),
+
+        };
+        let result = db::submit_question(&data.collection.clone(), question_entry).await.unwrap();
+
+        web::Json(result)
+    }
+
+    async fn list_all(data: web::Data<AppState>) -> impl Responder {
+        let results = db::find_all(&data.collection.clone()).await.unwrap();
+        web::Json(results)
     }
 
     HttpServer::new(move || {
@@ -62,7 +75,9 @@ pub async fn main() -> mongodb::error::Result<()> {
             .data(AppState {
                 collection: collection.clone(),
             })
-            .service(web::scope("/api").service(web::scope("/submit").route(
+            .service(web::scope("/api")
+            .route("/listall", web::get().to(list_all))
+            .service(web::scope("/submit").route(
                 "/question/{question}/{time}",
                 web::get().to(submit_question),
             )))
