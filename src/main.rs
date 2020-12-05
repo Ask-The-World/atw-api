@@ -67,6 +67,12 @@ pub async fn main() -> mongodb::error::Result<()> {
         web::Json(results)
     }
 
+    // TODO: add error handling and returning status codes
+    async fn get_question(data: web::Data<AppState>) -> impl Responder {
+        let result = db::get_random_question(&data.collection.clone()).await.unwrap();
+        web::Json(result)
+    }
+
     // starting the server
     HttpServer::new(move || {
         App::new()
@@ -75,6 +81,9 @@ pub async fn main() -> mongodb::error::Result<()> {
             })
             .service(web::scope("/api")
             .route("/listall", web::get().to(list_all))
+            .service(web::scope("/get").route(
+                "/question",
+                web::get().to(get_question)))
             .service(web::scope("/submit").route(
                 "/question/{question}/{time}",
                 web::get().to(submit_question),
