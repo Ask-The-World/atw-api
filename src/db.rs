@@ -7,7 +7,7 @@ use futures::stream::StreamExt;
 // initializing connection with database
 pub async fn get_collection() -> mongodb::error::Result<Collection> {
     let config: ConfVars = get_conf_vars();
-    let client = Client::with_uri_str(&format!("mongodb://{}:{}@{}:{}/", config.db_user, config.db_password, config.db_server, config.db_port)[..]).await?;
+    let client = Client::with_uri_str(&format!("mongodb+srv://{}:{}@{}/{}?retryWrites=true&w=majority", config.db_user, config.db_password, config.db_server, config.db_database)[..]).await?;
     let database: Database = client.database("atw");
     let collection: Collection = database.collection("questions");
     return Ok(collection)
@@ -41,4 +41,20 @@ pub async fn submit_question(col: &Collection, data: QuestionEntry) -> mongodb::
     let result = col.insert_one(document.to_owned(), None).await?;
     let id = result.inserted_id.as_object_id().unwrap().to_owned();
     Ok(id)
+}
+
+pub async fn get_random_question(col: &Collection) -> mongodb::error::Result<QuestionResult> {
+    let options = bson::from_document(doc!{"$sample": {"size": 1}});
+    let mut cursor = col.aggregate(options, None).await?;
+    let mut question: Option<QuestionResult> = None;
+    while let Some(result) = cursor.next().await {
+        match result {
+            Ok(document) => {
+                let doc: QuestionResult = bson::from_bson(bson::Bson::Document(document)).unwrap();
+                question = Some(doc);
+            }
+            Err(e) => println!("{:#?}", e),
+        }
+    }
+    Ok(question.unwrap())
 }
