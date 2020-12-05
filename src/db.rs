@@ -65,3 +65,9 @@ pub async fn submit_answer(col: &Collection, object_id: bson::oid::ObjectId, ans
         false => {Ok(col.update_one(doc!{"_id": object_id}, doc!{"$inc": {"no": 1}}, None).await?)}
     }
 }
+
+pub async fn get_answer(col: &Collection, object_id: bson::oid::ObjectId) -> mongodb::error::Result<QuestionResult> {
+    let result = col.find_one(doc!{"_id": object_id}, None).await?;
+    let answer: QuestionResult = bson::from_bson(bson::Bson::Document(result.unwrap())).unwrap();
+    Ok(answer)
+}
