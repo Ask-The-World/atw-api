@@ -1,11 +1,12 @@
 // imports
 mod conf_vars;
 use actix_web::{web, App, HttpServer, Responder};
+use conf_vars::ConfVars;
 use mongodb::{Collection, bson,};
 mod db;
 use serde::{Serialize, Deserialize};
 use rand::random;
-
+use chrono::{Duration, Utc};
 
 // question Formats
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -15,6 +16,7 @@ pub struct QuestionEntry {
     yes: i32,
     no: i32,
     default_answer: bool,
+    expire_at: bson::Bson,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -26,6 +28,7 @@ pub struct QuestionResult {
     yes: u32,
     no: u32,
     default_answer: bool,
+    expire_at: bson::Bson,
 }
 
 #[actix_web::main]
@@ -34,7 +37,10 @@ pub async fn main() -> mongodb::error::Result<()> {
     // initializing app
     struct AppState {
         collection: Collection,
+        config: conf_vars::ConfVars,
     }
+
+    let config: ConfVars = conf_vars::get_conf_vars();
 
     let collection = db::get_collection().await.unwrap();
 
@@ -54,7 +60,8 @@ pub async fn main() -> mongodb::error::Result<()> {
             time: i64::from(time),
             yes: 0,
             no: 0,
-            default_answer: random()
+            default_answer: random(),
+            expire_at: bson::Bson::DateTime(Utc::now() + Duration::seconds(i64::from(time) + i64::from(data.config.default_delete_time)))
         };
         let result = db::submit_question(&data.collection.clone(), question_entry).await.unwrap();
 
@@ -78,6 +85,7 @@ pub async fn main() -> mongodb::error::Result<()> {
         App::new()
             .data(AppState {
                 collection: collection.clone(),
+                config: config.clone(),
             })
             .service(web::scope("/api")
             .route("/listall", web::get().to(list_all))
