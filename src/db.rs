@@ -1,7 +1,7 @@
 // imports
 use bson::oid::ObjectId;
-use mongodb::{Client, bson::doc, bson, Collection, Database};
-use crate::{QuestionEntry, QuestionResult, conf_vars::{ConfVars, get_conf_vars}};
+use mongodb::{Client, Collection, Database, results::UpdateResult, bson::doc, bson};
+use crate::{SubmitQuestion, QuestionResult, conf_vars::{ConfVars, get_conf_vars}};
 use futures::stream::StreamExt;
 
 // initializing connection with database
@@ -35,7 +35,7 @@ pub async fn find_all(col: &Collection) ->  mongodb::error::Result<Vec<QuestionR
 
 // submiting a single question and returning ObjectId
 // TODO: add error handling and returning status codes
-pub async fn submit_question(col: &Collection, data: QuestionEntry) -> mongodb::error::Result<ObjectId> {
+pub async fn submit_question(col: &Collection, data: SubmitQuestion) -> mongodb::error::Result<ObjectId> {
     let serialized_data = bson::to_bson(&data)?;
     let document = serialized_data.as_document().unwrap();
     let result = col.insert_one(document.to_owned(), None).await?;
@@ -57,4 +57,11 @@ pub async fn get_random_question(col: &Collection) -> mongodb::error::Result<Que
         }
     }
     Ok(question.unwrap())
+}
+
+pub async fn submit_answer(col: &Collection, object_id: bson::oid::ObjectId, answer: bool) -> mongodb::error::Result<UpdateResult> {
+    match answer {
+        true  => {Ok(col.update_one(doc!{"_id": object_id}, doc!{"$inc": {"yes": 1}}, None).await?)},
+        false => {Ok(col.update_one(doc!{"_id": object_id}, doc!{"$inc": {"no": 1}}, None).await?)}
+    }
 }
