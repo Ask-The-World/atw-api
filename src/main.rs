@@ -1,15 +1,16 @@
 // imports
 mod conf_vars;
-use actix_web::{web, App, HttpServer, Responder};
-use bson::oid::ObjectId;
+use actix_web::{web, App, HttpServer, Responder, error, http::header, http::StatusCode, HttpResponse,dev::HttpResponseBuilder};
+use bson::{oid::ObjectId, doc};
 use conf_vars::ConfVars;
 use mongodb::{bson, Collection};
 mod db;
 use chrono::{Duration, Utc};
 use rand::random;
 use serde::{Deserialize, Serialize};
+use derive_more::{Display, Error};
 
-// question Formats
+// question formats
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct SubmitQuestion {
     question: String,
@@ -47,8 +48,30 @@ pub struct GetAnswer {
     answer: bool,
 }
 
+// errors
+#[derive(Debug, Display, Error)]
+pub enum UserError {
+    #[display(fmt = "This is a custom Error")]
+    CustomError,
+}
+
+impl error::ResponseError for UserError {
+    fn error_response(&self) -> HttpResponse {
+        HttpResponseBuilder::new(self.status_code())
+            .set_header(header::CONTENT_TYPE, "text/html; charset=utf-8")
+            .body(self.to_string())
+    }
+
+    fn status_code(&self) -> StatusCode {
+        match *self {
+            UserError::CustomError => StatusCode::IM_A_TEAPOT,
+        }
+    }
+
+}
+
 #[actix_web::main]
-pub async fn main() -> mongodb::error::Result<()> {
+pub async fn main() -> std::io::Result<()> {
     // initializing app
     struct AppState {
         collection: Collection,
@@ -91,9 +114,11 @@ pub async fn main() -> mongodb::error::Result<()> {
     }
 
     // TODO: add error handling and returning status codes
-    async fn list_all(data: web::Data<AppState>) -> impl Responder {
+    async fn list_all(data: web::Data<AppState>) -> Result<HttpResponse, UserError> {
         let results = db::find_all(&data.collection.clone()).await.unwrap();
-        web::Json(results)
+        Err(UserError::CustomError)
+        //Ok(HttpResponse::Ok().json(results))
+        // web::Json(results)
     }
 
     // TODO: add error handling and returning status codes
