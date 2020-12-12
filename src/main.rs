@@ -1,6 +1,6 @@
 // imports
 mod conf_vars;
-use actix_web::{web, App, HttpServer, Responder, error, http::header, http::StatusCode, HttpResponse,dev::HttpResponseBuilder};
+use actix_web::{web, App, HttpServer, Responder, HttpResponse};
 use bson::{oid::ObjectId, doc};
 use conf_vars::ConfVars;
 use mongodb::{bson, Collection};
@@ -8,7 +8,8 @@ mod db;
 use chrono::{Duration, Utc};
 use rand::random;
 use serde::{Deserialize, Serialize};
-use derive_more::{Display, Error};
+mod errors;
+use crate::errors::{UserError, UserErrorType};
 
 // question formats
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -46,28 +47,6 @@ pub struct GetAnswer {
     question: String,
     time: bson::Bson,
     answer: bool,
-}
-
-// errors
-#[derive(Debug, Display, Error)]
-pub enum UserError {
-    #[display(fmt = "This is a custom Error")]
-    CustomError,
-}
-
-impl error::ResponseError for UserError {
-    fn error_response(&self) -> HttpResponse {
-        HttpResponseBuilder::new(self.status_code())
-            .set_header(header::CONTENT_TYPE, "text/html; charset=utf-8")
-            .body(self.to_string())
-    }
-
-    fn status_code(&self) -> StatusCode {
-        match *self {
-            UserError::CustomError => StatusCode::IM_A_TEAPOT,
-        }
-    }
-
 }
 
 #[actix_web::main]
@@ -114,11 +93,18 @@ pub async fn main() -> std::io::Result<()> {
     }
 
     // TODO: add error handling and returning status codes
-    async fn list_all(data: web::Data<AppState>) -> Result<HttpResponse, UserError> {
-        let results = db::find_all(&data.collection.clone()).await.unwrap();
-        Err(UserError::CustomError)
-        //Ok(HttpResponse::Ok().json(results))
-        // web::Json(results)
+    async fn list_all(data: web::Data<AppState>) -> Result<impl Responder, UserError> {
+        let query = db::find_all(&data.collection.clone()).await;
+        let results: Vec<QuestionResult>;
+        match query {
+            Ok(query) => {results = query;}
+            _ => return Err(UserError{
+                error_type: UserErrorType::InternalError,
+                cause: None,
+                message: Some("Database connection error".to_string())
+            })
+        }
+        Ok(HttpResponse::Ok().json(results))
     }
 
     // TODO: add error handling and returning status codes

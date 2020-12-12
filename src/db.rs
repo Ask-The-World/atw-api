@@ -1,8 +1,9 @@
 // imports
-use bson::oid::ObjectId;
+use bson::{Document, oid::ObjectId};
 use mongodb::{Client, Collection, Database, results::UpdateResult, bson::doc, bson};
 use crate::{SubmitQuestion, QuestionResult, conf_vars::{ConfVars, get_conf_vars}};
 use futures::stream::StreamExt;
+use crate::{UserError, UserErrorType};
 
 // initializing connection with database
 pub async fn get_collection() -> mongodb::error::Result<Collection> {
@@ -14,9 +15,7 @@ pub async fn get_collection() -> mongodb::error::Result<Collection> {
 }
 
 // collecting all questions
-// TODO: add error handling and status codes
-pub async fn find_all(col: &Collection) ->  mongodb::error::Result<Vec<QuestionResult>> {
-    // Ping the server to see if you can connect to the cluster
+pub async fn find_all(col: &Collection) ->  Result<Vec<QuestionResult>, UserError> {
     let mut cursor = col.find(doc! {}, None).await?;
         
     let mut results: Vec<QuestionResult> = [].to_vec();
@@ -24,39 +23,78 @@ pub async fn find_all(col: &Collection) ->  mongodb::error::Result<Vec<QuestionR
     while let Some(result) = cursor.next().await {
         match result {
             Ok(document) => {
-                let doc: QuestionResult= bson::from_bson(bson::Bson::Document(document)).unwrap();
-                results.push(doc);
-            }
-            Err(e) => println!("{:#?}", e),
+                let doc_result: Result<QuestionResult, mongodb::bson::de::Error> = bson::from_bson(bson::Bson::Document(document));
+                match doc_result {
+                    Ok(document) => results.push(document),
+                    _ => return Err(UserError{
+                        error_type: UserErrorType::SerializingError,
+                        cause: None,
+                        message: Some("Could not deserialize question".to_string())
+                    })
+                }}
+            _ => return Err(UserError{
+                error_type: UserErrorType::InternalError,
+                cause: None,
+                message: Some("Could not extract result from cursor".to_string())
+            }),
         }
     }
     Ok(results)
 }
 
 // submiting a single question and returning ObjectId
-// TODO: add error handling and returning status codes
-pub async fn submit_question(col: &Collection, data: SubmitQuestion) -> mongodb::error::Result<ObjectId> {
+
+pub async fn submit_question(col: &Collection, data: SubmitQuestion) -> Result<ObjectId, UserError> {
     let serialized_data = bson::to_bson(&data)?;
-    let document = serialized_data.as_document().unwrap();
+    let document_option = serialized_data.as_document();
+    let document: &Document;
+    match document_option {
+        Some(doc) => document = doc,
+        _ => return Err(UserError{
+            error_type: UserErrorType::SerializingError,
+            cause: None,
+            message: Some("Could not convert question to document".to_string())
+        })
+    }
     let result = col.insert_one(document.to_owned(), None).await?;
-    let id = result.inserted_id.as_object_id().unwrap().to_owned();
-    Ok(id)
+    let id_option = result.inserted_id.as_object_id();
+    match id_option {
+        Some(id) => return Ok(id.to_owned()),
+        _ => return Err(UserError{
+            error_type: UserErrorType::InternalError,
+            cause: None,
+            message: Some("Could not get ObjectId from submitted question".to_string())
+        })
+    }
 }
 
-pub async fn get_random_question(col: &Collection) -> mongodb::error::Result<QuestionResult> {
+pub async fn get_random_question(col: &Collection) -> Result<QuestionResult, UserError> {
     let options = bson::from_document(doc!{"$sample": {"size": 1}});
     let mut cursor = col.aggregate(options, None).await?;
-    let mut question: Option<QuestionResult> = None;
     while let Some(result) = cursor.next().await {
         match result {
             Ok(document) => {
-                let doc: QuestionResult = bson::from_bson(bson::Bson::Document(document)).unwrap();
-                question = Some(doc);
-            }
-            Err(e) => println!("{:#?}", e),
+                let doc_result: Result<QuestionResult, mongodb::bson::de::Error> = bson::from_bson(bson::Bson::Document(document));
+                match doc_result {
+                    Ok(document) => return Ok(document),
+                    _ => return Err(UserError{
+                        error_type: UserErrorType::SerializingError,
+                        cause: None,
+                        message: Some("Could not deserialize question".to_string())
+                    })
+                }}
+            _ => return Err(UserError{
+                error_type: UserErrorType::InternalError,
+                cause: None,
+                message: Some("Could not extract result from cursor".to_string())
+            }),
         }
     }
-    Ok(question.unwrap())
+    Err(UserError{
+        error_type: UserErrorType::InternalError,
+        cause: None,
+        message: Some("No questions in database".to_string())
+    })
 }
 
 pub async fn submit_answer(col: &Collection, object_id: bson::oid::ObjectId, answer: bool) -> mongodb::error::Result<UpdateResult> {
@@ -66,8 +104,24 @@ pub async fn submit_answer(col: &Collection, object_id: bson::oid::ObjectId, ans
     }
 }
 
-pub async fn get_answer(col: &Collection, object_id: bson::oid::ObjectId) -> mongodb::error::Result<QuestionResult> {
-    let result = col.find_one(doc!{"_id": object_id}, None).await?;
-    let answer: QuestionResult = bson::from_bson(bson::Bson::Document(result.unwrap())).unwrap();
-    Ok(answer)
+pub async fn get_answer(col: &Collection, object_id: bson::oid::ObjectId) -> Result<QuestionResult, UserError> {
+    let result_option = col.find_one(doc!{"_id": object_id}, None).await?;
+    let result: Document;
+    match result_option {
+        Some(document) => {result = document;},
+        _ => return Err(UserError{
+            error_type: UserErrorType::InternalError,
+            cause: None,
+            message: Some("Could not find question".to_string())
+        })
+    }
+    let answer_result: Result<QuestionResult, mongodb::bson::de::Error> = bson::from_bson(bson::Bson::Document(result));
+    match answer_result {
+        Ok(answer) => return Ok(answer),
+        _ => return Err(UserError{
+            error_type: UserErrorType::SerializingError,
+            cause: None,
+            message: Some("Could not deserialize question".to_string())
+        })
+    }
 }
