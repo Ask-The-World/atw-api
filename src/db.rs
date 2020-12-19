@@ -29,13 +29,13 @@ pub async fn find_all(col: &Collection) ->  Result<Vec<QuestionResult>, UserErro
                     _ => return Err(UserError{
                         error_type: UserErrorType::SerializingError,
                         cause: None,
-                        message: Some("Could not deserialize question".to_string())
+                        message: None
                     })
                 }}
             _ => return Err(UserError{
                 error_type: UserErrorType::InternalError,
                 cause: None,
-                message: Some("Could not extract result from cursor".to_string())
+                message: None
             }),
         }
     }
@@ -53,7 +53,7 @@ pub async fn submit_question(col: &Collection, data: SubmitQuestion) -> Result<O
         _ => return Err(UserError{
             error_type: UserErrorType::SerializingError,
             cause: None,
-            message: Some("Could not convert question to document".to_string())
+            message: None
         })
     }
     let result = col.insert_one(document.to_owned(), None).await?;
@@ -63,7 +63,7 @@ pub async fn submit_question(col: &Collection, data: SubmitQuestion) -> Result<O
         _ => return Err(UserError{
             error_type: UserErrorType::InternalError,
             cause: None,
-            message: Some("Could not get ObjectId from submitted question".to_string())
+            message: None
         })
     }
 }
@@ -80,20 +80,20 @@ pub async fn get_random_question(col: &Collection) -> Result<QuestionResult, Use
                     _ => return Err(UserError{
                         error_type: UserErrorType::SerializingError,
                         cause: None,
-                        message: Some("Could not deserialize question".to_string())
+                        message: None
                     })
                 }}
             _ => return Err(UserError{
                 error_type: UserErrorType::InternalError,
                 cause: None,
-                message: Some("Could not extract result from cursor".to_string())
+                message: None
             }),
         }
     }
     Err(UserError{
         error_type: UserErrorType::InternalError,
         cause: None,
-        message: Some("No questions in database".to_string())
+        message: Some("Currently no questions in database".to_string())
     })
 }
 
@@ -121,7 +121,7 @@ pub async fn get_answer(col: &Collection, object_id: bson::oid::ObjectId) -> Res
         _ => return Err(UserError{
             error_type: UserErrorType::SerializingError,
             cause: None,
-            message: Some("Could not deserialize question".to_string())
+            message: None
         })
     }
 }
