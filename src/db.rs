@@ -6,8 +6,16 @@ use futures::stream::StreamExt;
 use crate::{UserError, UserErrorType};
 
 // initializing connection with database
-pub async fn get_collection() -> mongodb::error::Result<(Collection, bool)> {
-    let config: ConfVars = get_conf_vars();
+pub async fn get_collection() -> Result<(Collection, bool), UserError> {
+    let config: ConfVars = match get_conf_vars() {
+        Ok(config) => config,
+        _ => {println!("Impossible to see this, if you are here something is seriously wrong with this code...");
+                return Err(UserError{
+                    error_type: UserErrorType::InternalError,
+                    cause: None,
+                    message: Some("No clue what you did to get here... :) | pls contact me...".to_string())
+                })}
+    };
     let client = Client::with_uri_str(&format!("mongodb+srv://{}:{}@{}/{}?retryWrites=true&w=majority", config.db_user, config.db_password, config.db_server, config.db_database)[..]).await?;
     let database: Database = client.database("atw");
     let connected: bool;

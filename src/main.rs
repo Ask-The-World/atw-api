@@ -22,7 +22,10 @@ pub async fn main() -> std::io::Result<()> {
     // initializing app
     
 
-    let config: ConfVars = conf_vars::get_conf_vars();
+    let config: ConfVars = match conf_vars::get_conf_vars() {
+        Ok(config) => config,
+        _ => return Ok(()),
+    };
 
     let (collection, connected) = db::get_collection().await.unwrap();
 
