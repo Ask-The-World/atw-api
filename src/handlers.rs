@@ -52,26 +52,13 @@ pub async fn submit_question(
     Ok(web::Json(result))
 }
 
-// TODO: add error handling and returning status codes
-pub async fn list_all(data: web::Data<AppState>) -> impl Responder {
-    let query = db::find_all(&data.collection.clone()).await;
-    let results: Vec<QuestionResult>;
-    match query {
-        Ok(query) => {results = query;}
-        _ => return Err(UserError{
-            error_type: UserErrorType::InternalError,
-            cause: None,
-            message: Some("Database connection error".to_string())
-        })
-    }
+pub async fn list_all(data: web::Data<AppState>) -> Result<impl Responder, UserError> {
+    let results = db::find_all(&data.collection.clone()).await?;
     Ok(web::Json(results))
 }
 
-// TODO: add error handling and returning status codes
-pub async fn get_question(data: web::Data<AppState>) -> impl Responder {
-    let query = db::get_random_question(&data.collection.clone())
-        .await
-        .unwrap();
+pub async fn get_question(data: web::Data<AppState>) -> Result<impl Responder, UserError> {
+    let query: QuestionResult = db::get_random_question(&data.collection.clone()).await?;
     let result: GetQuestion = GetQuestion {
         id: query.id.clone(),
         question: query.question,
@@ -79,28 +66,40 @@ pub async fn get_question(data: web::Data<AppState>) -> impl Responder {
             query.id.timestamp() + Duration::seconds(i64::from(query.time)),
         ),
     };
-    web::Json(result)
+    Ok(web::Json(result))
 }
 
-// TODO: add error handling and returning status codes
 pub async fn submit_answer(
-    web::Path(param): web::Path<(bool, String)>,
+    web::Path(param): web::Path<(String, String)>,
     data: web::Data<AppState>,
-) -> impl Responder {
-    let (answer, object_id_string) = param;
+) -> Result<impl Responder, UserError> {
+    let (answer_str, object_id_string) = param;
+    let answer: bool = match answer_str.parse::<bool>() {
+        Ok(answer) => answer,
+        _ => return Err(UserError{
+            error_type: UserErrorType::BadRequest,
+            cause: None,
+            message: Some("Answer was not specified as a boolean, please only provide true or false :)".to_string())
+        })
+    };
     let object_id: ObjectId = bson::oid::ObjectId::with_string(&object_id_string[..]).unwrap();
     let result = db::submit_answer(&data.collection.clone(), object_id, answer)
-        .await
-        .unwrap();
-    web::Json(result)
+        .await?;
+    Ok(web::Json(result))
 }
 
-// TODO: add error handling and returning status codes
 pub async fn get_answer(web::Path(object_id_string): web::Path<String>,
 data: web::Data<AppState>,
-) -> impl Responder{
-    let object_id: ObjectId = bson::oid::ObjectId::with_string(&object_id_string[..]).unwrap();
-    let result: QuestionResult = db::get_answer(&data.collection.clone(), object_id).await.unwrap();
+) -> Result<impl Responder, UserError> {
+    let object_id: ObjectId = match bson::oid::ObjectId::with_string(&object_id_string[..]){
+        Ok(object_id) => object_id,
+        _ => return Err(UserError{
+            error_type: UserErrorType::BadRequest,
+            cause: None,
+            message: Some("The provides object id could not be passed, please check if it is a valid bson object id :)".to_string())
+        })
+    };
+    let result: QuestionResult = db::get_answer(&data.collection.clone(), object_id).await?;
     let mut answer: bool = result.default_answer;
     if result.yes > result.no {answer = false;}
     else if result.yes < result.no {answer = false;}
@@ -111,5 +110,5 @@ data: web::Data<AppState>,
         ),
         answer: answer,
     };
-    web::Json(output)
+    Ok(web::Json(output))
 }
