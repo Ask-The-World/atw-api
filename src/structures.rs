@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
-use mongodb::{bson, Collection};
 use crate::conf_vars;
+use mongodb::{bson, Collection};
+use serde::{Deserialize, Serialize};
 
 // question formats
 #[derive(Deserialize, Serialize, Clone, Debug)]

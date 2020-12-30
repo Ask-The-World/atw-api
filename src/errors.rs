@@ -1,13 +1,13 @@
 use actix_web::{error, http::StatusCode, HttpResponse};
-use std::fmt;
 use serde::Serialize;
+use std::fmt;
 
 #[derive(Debug)]
 pub enum UserErrorType {
     InternalError,
     BadRequest,
     SerializingError,
-    DbError
+    DbError,
 }
 
 #[derive(Debug)]
@@ -74,24 +74,23 @@ impl error::ResponseError for UserError {
             UserErrorType::DbError => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
-
 }
 
 impl From<mongodb::bson::ser::Error> for UserError {
     fn from(error: mongodb::bson::ser::Error) -> UserError {
         UserError {
-            message: None, 
+            message: None,
             cause: Some(error.to_string()),
-            error_type: UserErrorType::SerializingError
+            error_type: UserErrorType::SerializingError,
         }
     }
 }
 impl From<mongodb::bson::de::Error> for UserError {
     fn from(error: mongodb::bson::de::Error) -> UserError {
         UserError {
-            message: None, 
+            message: None,
             cause: Some(error.to_string()),
-            error_type: UserErrorType::SerializingError
+            error_type: UserErrorType::SerializingError,
         }
     }
 }
@@ -99,9 +98,9 @@ impl From<mongodb::bson::de::Error> for UserError {
 impl From<mongodb::error::Error> for UserError {
     fn from(error: mongodb::error::Error) -> UserError {
         UserError {
-            message: None, 
+            message: None,
             cause: Some(error.to_string()),
-            error_type: UserErrorType::DbError
+            error_type: UserErrorType::DbError,
         }
     }
 }

@@ -4,7 +4,7 @@ use std::env;
 
 // config structure
 #[derive(Clone)]
-pub struct ConfVars{
+pub struct ConfVars {
     pub min_time: u32,
     pub max_time: u32,
     pub default_time: u32,
@@ -21,12 +21,11 @@ pub struct ConfVars{
 }
 
 pub fn get_conf_vars() -> Result<ConfVars, std::num::ParseIntError> {
-
     // importing environment variables from .env file
     dotenv().ok();
-    
+
     // assigning default values to the configuration variables
-    let mut conf_vars: ConfVars = ConfVars{
+    let mut conf_vars: ConfVars = ConfVars {
         min_time: 30,
         max_time: 300,
         default_time: 180,
@@ -45,19 +44,31 @@ pub fn get_conf_vars() -> Result<ConfVars, std::num::ParseIntError> {
     // assigning the configuration values found in the environment variables
     for (key, value) in env::vars() {
         match &key[..] {
-            "MIN_TIME" => {conf_vars.min_time = value.parse()?;}
-            "MAX_TIME" => {conf_vars.max_time = value.parse()?;}
-            "DEFAULT_TIME" => {conf_vars.default_time = value.parse()?;}
-            "MAX_QUESTION_LENGTH" => {conf_vars.max_question_length = value.parse()?;}
-            "DEFAULT_DELETE_TIME" => {conf_vars.default_delete_time = value.parse()?;}
-            "DB_USER" => {conf_vars.db_user = value}
-            "DB_PASSWORD" => {conf_vars.db_password = value}
-            "DB_PORT" => {conf_vars.db_port = value}
-            "DB_SERVER" => {conf_vars.db_server = value}
-            "DB_DATABASE" => {conf_vars.db_database = value}
-            "DB_COLLECTION" => {conf_vars.db_collection = value}
-            "SERVER_IP" => {conf_vars.server_ip = value}
-            "SERVER_PORT" => {conf_vars.server_port = value.parse()?;}
+            "MIN_TIME" => {
+                conf_vars.min_time = value.parse()?;
+            }
+            "MAX_TIME" => {
+                conf_vars.max_time = value.parse()?;
+            }
+            "DEFAULT_TIME" => {
+                conf_vars.default_time = value.parse()?;
+            }
+            "MAX_QUESTION_LENGTH" => {
+                conf_vars.max_question_length = value.parse()?;
+            }
+            "DEFAULT_DELETE_TIME" => {
+                conf_vars.default_delete_time = value.parse()?;
+            }
+            "DB_USER" => conf_vars.db_user = value,
+            "DB_PASSWORD" => conf_vars.db_password = value,
+            "DB_PORT" => conf_vars.db_port = value,
+            "DB_SERVER" => conf_vars.db_server = value,
+            "DB_DATABASE" => conf_vars.db_database = value,
+            "DB_COLLECTION" => conf_vars.db_collection = value,
+            "SERVER_IP" => conf_vars.server_ip = value,
+            "SERVER_PORT" => {
+                conf_vars.server_port = value.parse()?;
+            }
             _ => {}
         }
     }
