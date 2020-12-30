@@ -28,7 +28,9 @@ pub async fn main() -> std::io::Result<()> {
         return Ok(());
     }
 
-    println!("Server successfully running...\nStop with \"CTRL + C\"...");
+    let server: String = format!("{}:{}", config.server_ip, config.server_port); 
+
+    println!("Server successfully running on {}...\nStop with \"CTRL + C\"...", server);
 
     // starting the server
     HttpServer::new(move || {
@@ -55,7 +57,7 @@ pub async fn main() -> std::io::Result<()> {
                     ),
             )
     })
-    .bind("127.0.0.1:8080")?
+    .bind(server)?
     .run()
     .await?;
 
