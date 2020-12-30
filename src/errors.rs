@@ -38,13 +38,12 @@ impl UserError {
                 message: None,
                 error_type: UserErrorType::SerializingError,
                 ..
-            } => "Could not serialize a struct".to_string(),
+            } => "Could not serialize a data structure".to_string(),
             UserError {
                 message: None,
                 error_type: UserErrorType::DbError,
                 ..
             } => "Database error, connection might not work".to_string(),
-            _ => "An unexpected error has occurred".to_string(),
         }
     }
 }
