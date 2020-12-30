@@ -96,7 +96,7 @@ data: web::Data<AppState>,
         _ => return Err(UserError{
             error_type: UserErrorType::BadRequest,
             cause: None,
-            message: Some("The provides object id could not be passed, please check if it is a valid bson object id :)".to_string())
+            message: Some("The provided object id could not be passed, please check if it is a valid bson object id :)".to_string())
         })
     };
     let result: QuestionResult = db::get_answer(&data.collection.clone(), object_id).await?;
