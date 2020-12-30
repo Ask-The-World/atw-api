@@ -24,7 +24,9 @@ pub async fn main() -> std::io::Result<()> {
 
     let config: ConfVars = match conf_vars::get_conf_vars() {
         Ok(config) => config,
-        _ => return Ok(()),
+        _ => {
+            println!("Could not parse given environment variables, please check if all have the correct format");
+            return Ok(());},
     };
 
     let (collection, connected) = db::get_collection().await.unwrap();
