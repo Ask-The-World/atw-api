@@ -6,12 +6,19 @@ use futures::stream::StreamExt;
 use crate::{UserError, UserErrorType};
 
 // initializing connection with database
-pub async fn get_collection() -> mongodb::error::Result<Collection> {
+pub async fn get_collection() -> mongodb::error::Result<(Collection, bool)> {
     let config: ConfVars = get_conf_vars();
     let client = Client::with_uri_str(&format!("mongodb+srv://{}:{}@{}/{}?retryWrites=true&w=majority", config.db_user, config.db_password, config.db_server, config.db_database)[..]).await?;
     let database: Database = client.database("atw");
+    let connected: bool;
+    match database.run_command(doc! {"ping": 1}, None).await {
+        Ok(_x) => {println!("Connected successfully to database ...");
+    connected = true;},
+        _ => {println!("Could not establish connection to database, please check credentials and try again");
+    connected = false;}
+    }
     let collection: Collection = database.collection("questions");
-    return Ok(collection)
+    return Ok((collection, connected))
 }
 
 // collecting all questions

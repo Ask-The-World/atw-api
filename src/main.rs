@@ -24,9 +24,13 @@ pub async fn main() -> std::io::Result<()> {
 
     let config: ConfVars = conf_vars::get_conf_vars();
 
-    let collection = db::get_collection().await.unwrap();
+    let (collection, connected) = db::get_collection().await.unwrap();
 
-    println!("Successfully running...\nStop with \"CTRL + C\"...");
+    if connected == false {
+        return Ok(())
+    }
+
+    println!("Server successfully running...\nStop with \"CTRL + C\"...");
 
     // starting the server
     HttpServer::new(move || {
