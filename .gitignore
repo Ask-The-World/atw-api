@@ -243,6 +243,7 @@ Temporary Items
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
+.idea
 
 # End of https://www.toptal.com/developers/gitignore/api/python,macos,vscode,flask
 

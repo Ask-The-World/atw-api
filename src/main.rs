@@ -8,7 +8,6 @@ use crate::errors::{UserError, UserErrorType};
 use crate::handlers::*;
 use crate::structures::*;
 use actix_web::{web, App, HttpServer};
-use conf_vars::ConfVars;
 
 #[actix_web::main]
 pub async fn main() -> std::io::Result<()> {
@@ -45,7 +44,8 @@ pub async fn main() -> std::io::Result<()> {
                     .service(
                         web::scope("/get")
                             .route("/answer/{object_id}", web::get().to(get_answer))
-                            .route("/question", web::get().to(get_question)),
+                            .route("/question", web::get().to(get_question))
+                            .route("/config", web::get().to(get_config)),
                     )
                     .service(
                         web::scope("/submit")
