@@ -1,4 +1,3 @@
-use crate::conf_vars;
 use mongodb::{bson, Collection};
 use serde::{Deserialize, Serialize};
 
@@ -42,5 +41,31 @@ pub struct GetAnswer {
 
 pub struct AppState {
     pub collection: Collection,
-    pub config: conf_vars::ConfVars,
+    pub config: ConfVars,
+}
+
+// config structure
+#[derive(Clone)]
+pub struct ConfVars {
+    pub min_time: u32,
+    pub max_time: u32,
+    pub default_time: u32,
+    pub max_question_length: u32,
+    pub default_delete_time: u32,
+    pub db_password: String,
+    pub db_user: String,
+    pub db_port: String,
+    pub db_server: String,
+    pub db_database: String,
+    pub db_collection: String,
+    pub server_ip: String,
+    pub server_port: u32,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct ServerConfig {
+    pub min_time: u32,
+    pub max_time: u32,
+    pub default_time: u32,
+    pub max_question_length: u32,
 }

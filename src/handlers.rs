@@ -119,3 +119,13 @@ pub async fn get_answer(
     };
     Ok(web::Json(output))
 }
+
+pub async fn get_config(data: web::Data<AppState>) -> Result<impl Responder, UserError> {
+    let config: ServerConfig = ServerConfig{
+        min_time: data.config.min_time,
+        max_time: data.config.max_time,
+        default_time: data.config.default_time,
+        max_question_length: data.config.max_question_length,
+    };
+    Ok(web::Json(config))
+}

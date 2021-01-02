@@ -8,7 +8,6 @@ use crate::errors::{UserError, UserErrorType};
 use crate::handlers::*;
 use crate::structures::*;
 use actix_web::{web, App, HttpServer};
-use conf_vars::ConfVars;
 
 #[actix_web::main]
 pub async fn main() -> std::io::Result<()> {
@@ -28,7 +27,9 @@ pub async fn main() -> std::io::Result<()> {
         return Ok(());
     }
 
-    println!("Server successfully running...\nStop with \"CTRL + C\"...");
+    let server: String = format!("{}:{}", config.server_ip, config.server_port); 
+
+    println!("Server successfully running on {}...\nStop with \"CTRL + C\"...", server);
 
     // starting the server
     HttpServer::new(move || {
@@ -43,7 +44,8 @@ pub async fn main() -> std::io::Result<()> {
                     .service(
                         web::scope("/get")
                             .route("/answer/{object_id}", web::get().to(get_answer))
-                            .route("/question", web::get().to(get_question)),
+                            .route("/question", web::get().to(get_question))
+                            .route("/config", web::get().to(get_config)),
                     )
                     .service(
                         web::scope("/submit")
@@ -55,7 +57,7 @@ pub async fn main() -> std::io::Result<()> {
                     ),
             )
     })
-    .bind("127.0.0.1:8080")?
+    .bind(server)?
     .run()
     .await?;
 

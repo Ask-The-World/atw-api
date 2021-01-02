@@ -1,24 +1,8 @@
 // imports for working with environment variables and .env files
 use dotenv::dotenv;
 use std::env;
+use crate::structures::ConfVars;
 
-// config structure
-#[derive(Clone)]
-pub struct ConfVars {
-    pub min_time: u32,
-    pub max_time: u32,
-    pub default_time: u32,
-    pub max_question_length: u32,
-    pub default_delete_time: u32,
-    pub db_password: String,
-    pub db_user: String,
-    pub db_port: String,
-    pub db_server: String,
-    pub db_database: String,
-    pub db_collection: String,
-    pub server_ip: String,
-    pub server_port: u32,
-}
 
 pub fn get_conf_vars() -> Result<ConfVars, std::num::ParseIntError> {
     // importing environment variables from .env file

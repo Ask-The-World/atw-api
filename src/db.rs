@@ -1,7 +1,7 @@
 // imports
 use crate::{
-    conf_vars::{get_conf_vars, ConfVars},
-    QuestionResult, SubmitQuestion,
+    conf_vars::get_conf_vars,
+    QuestionResult, SubmitQuestion, ConfVars
 };
 use crate::{UserError, UserErrorType};
 use bson::{oid::ObjectId, Document};
